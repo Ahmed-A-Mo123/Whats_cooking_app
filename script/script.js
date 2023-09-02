@@ -126,6 +126,11 @@ function main() {
         recipeForm.reset();
         displayRecipe(newRecipe);
         saveToLocalStorage()
+        window.scroll({
+            top: document.body.scrollHeight,
+            behavior: 'smooth' // Optional, adds smooth scrolling animation
+          });
+          
            
     });
 

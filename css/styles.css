@@ -21,25 +21,26 @@ body {
     
 }
 
-.icon {
-    position: absolute;
-    top: 40px;
-    right: 100px;
-    height: 100px;
+@media screen and (max-width: 800px) {
+    .title {
+        font-size: 30px; /* Adjust the font size for smaller screens */
+    }
 }
 
+
+
 .icon2 {
-    position: absolute;
-    top: 50px;
-    left: 100px;
-    height: 80px;
-    background-color: white ;
+    position: absolute; /* Position icons relative to the title div */
+    top: 50px; /* Adjust the top value as needed */
+    right: 50px; /* Adjust the left value as needed */
+    height: 70px;
 
 }
 /* -------------------------------------------------------------------- */
 
 .form {
     /* border: solid black 2px; */
+    display: flexbox;
     float: left;
     width: 500px;
     height: 620px;
@@ -118,9 +119,10 @@ button:hover {
 }
 
 #autoFill {
-    position: absolute;
-    left: 420px;
-    top: 903px;
+    flex-wrap: wrap;
+    margin-left: 200px;
+    text-align: center;
+    float: left;
     cursor: pointer;
 
 }

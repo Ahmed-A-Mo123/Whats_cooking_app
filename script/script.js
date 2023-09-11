@@ -151,6 +151,29 @@ function displayRecipe(recipe) {
         steps.value = recipe['steps']
         url.value = recipe['url']
 
+        // scrolls up to the form so that the user can modify the recipe
+        window.scroll({
+            top: 50,
+            behavior: 'smooth' // Optional, adds smooth scrolling animation
+        });
+
+
+        updateButton.onclick = function() {
+            //take the info from the input field that the user wants to update
+                let updatedRecipe = {
+                    name: recipeName.value,
+                    ingredients: ingredients.value.split(', '),
+                    steps: String(steps.value),
+                    url: String(url.value)
+                }
+        
+                updateRecipeApi(updatedRecipe, recipe['id'])
+        
+                if (updateButton) {
+                    updateButton.remove();
+                }
+                
+            }
 
     }
 
@@ -163,23 +186,7 @@ function displayRecipe(recipe) {
     });
 
 
-     updateButton.onclick = function() {
-        //take the info from the input field that the user wants to update
-        let updatedRecipe = {
-            id: recipe['id'],
-            name: recipeName.value,
-            ingredients: ingredients.value.split(', '),
-            steps: String(steps.value),
-            url: String(url.value)
-        }
-
-        updateRecipeApi(updatedRecipe, recipe['id'])
-
-        if (updateButton) {
-            updateButton.remove();
-        }
-        
-    }
+   
 }
 
 
@@ -189,7 +196,7 @@ function displayRecipe(recipe) {
 function main() {
     
     /* This kicks everything off after the submit button is clicked*/ 
-    recipeForm.addEventListener('submit', async function(event){
+    button.addEventListener('click', async function(event){
         event.preventDefault();
 
         let enteredRecipeName = recipeName.value;
@@ -216,10 +223,9 @@ function main() {
 
     });
 
-    // fetches and displays the recipes and other logic associated with it     
     fetchAndDisplay()
     
-    // calling th function that waits for the auto fill button ic clicked
+    
     autoFill()
     
     }

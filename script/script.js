@@ -6,9 +6,11 @@ const url = document.getElementById('url')
 const displayArea = document.getElementById('display-area');
 const button = document.getElementById('submit')
 const autoFillElement = document.getElementById('autoFill')
+const updateButton = document.createElement('button')
 
 let recipes = [];
 let counter = 0 // id counter
+const URL = 'http://127.0.0.1:8000/recipes/'
 
 /*-------------------------------------------------------------------------------------------------*/
 
@@ -16,25 +18,64 @@ let counter = 0 // id counter
 function deleteRecipe(index, id){
 
     recipes.splice(index, 1); // Deletes the recipe from the recipe array
-    saveToLocalStorage()
     const elementToRemove = document.getElementById(id);
     elementToRemove.remove(); // Deletes the recipe from the html
+}
+
+
+
+// fetches and displays the recipes using the GET method (from the API).
+async function fetchAndDisplay() {
+    let res = await fetch(URL)
+    let recipes = await res.json()
+    console.log(res)
+    for (let recipe of recipes){
+        displayRecipe(recipe)
+    }
+}
+
+
+// This function pushes a new recipe to the API using the POST method.
+async function addRecipeApi(recipe) {
+    let requestOptions = {
+        method: 'POST',
+        headers: {
+            'Content-Type' : 'application/json'
+        },
+        body: JSON.stringify(recipe)
+    }
+    try {
+        const res = await fetch(URL, requestOptions)
+    } catch (error) {
+        console.error("Error adding recipe to the API:", error);
+    } 
+    
+  
+} 
+
+async function deleteRecipeApi(recipeID){
+    let requestOptions = {
+        method: 'DELETE',
+        headers: {'Content-Type': 'application/json'}
+    }
+    let deleteEndpoint = URL + recipeID 
+
+    const res = await fetch(deleteEndpoint, requestOptions)
     
 }
 
-// funtion to save to local storage
-function saveToLocalStorage(){
-    localStorage.setItem('recipes', JSON.stringify(recipes));
+async function updateRecipeApi(updatedRecipe, recipeID) {
+    let requestOptions = {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(updatedRecipe)
+    }
+    updateEndpoint = URL + recipeID
 
-}
-
-// fetches and displays the local storage recipes
-function fetchAndDisplay() {
-    if (localStorage.getItem('recipes')) {
-        recipes = JSON.parse(localStorage.getItem('recipes'));
-        for (recipe of recipes){
-            displayRecipe(recipe)
-        }
+    try {
+        const res = await fetch(updateEndpoint, requestOptions)
+    } catch {
+        console.error("Error adding updated recipe to the API:", error);
     }
 }
 
@@ -69,6 +110,7 @@ function autoFill(){
    params: recipe (obj).
 */
 function displayRecipe(recipe) {
+    
     let recipeDiv = document.createElement('div')
     recipeDiv.setAttribute('id', recipe['id'])
     recipeDiv.innerHTML += `<img class="foodImg" src=${recipe['url']} alt="">`
@@ -83,18 +125,61 @@ function displayRecipe(recipe) {
 
     let deleteButton = document.createElement('button');
     deleteButton.textContent = "Delete";
-    deleteButton.setAttribute('id', 'del')
+    deleteButton.setAttribute('id', 'del');
+
+    let editButton = document.createElement('button');
+    editButton.textContent = 'Edit';
+    editButton.setAttribute('id', 'edit')
 
     deleteButton.onclick = function() {
         let recipeIndex = recipes.indexOf(recipe)
 
         deleteRecipe(recipeIndex, recipe['id']);
-        
+        deleteRecipeApi(recipe['id'])
     };
-    
-    recipeDiv.appendChild(deleteButton);
 
+    editButton.onclick = function(){
+        
+        updateButton.textContent = 'Update'
+        updateButton.setAttribute('id', 'update')
+
+        recipeForm.appendChild(updateButton)
+
+        //populate the input fields 
+        recipeName.value = recipe['name']
+        ingredients.value = recipe['ingredients']
+        steps.value = recipe['steps']
+        url.value = recipe['url']
+
+
+    }
+
+    recipeDiv.appendChild(deleteButton);
+    recipeDiv.appendChild(editButton);
     displayArea.appendChild(recipeDiv);
+    window.scroll({
+        top: document.body.scrollHeight,
+        behavior: 'smooth' // Optional, adds smooth scrolling animation
+    });
+
+
+     updateButton.onclick = function() {
+        //take the info from the input field that the user wants to update
+        let updatedRecipe = {
+            id: recipe['id'],
+            name: recipeName.value,
+            ingredients: ingredients.value.split(', '),
+            steps: String(steps.value),
+            url: String(url.value)
+        }
+
+        updateRecipeApi(updatedRecipe, recipe['id'])
+
+        if (updateButton) {
+            updateButton.remove();
+        }
+        
+    }
 }
 
 
@@ -104,7 +189,7 @@ function displayRecipe(recipe) {
 function main() {
     
     /* This kicks everything off after the submit button is clicked*/ 
-    recipeForm.addEventListener('submit', function(event){
+    recipeForm.addEventListener('submit', async function(event){
         event.preventDefault();
 
         let enteredRecipeName = recipeName.value;
@@ -112,33 +197,33 @@ function main() {
         let enteredSteps = steps.value;
         let enteredUrl = url.value
 
-        
-
+    
         let newRecipe = {
             id: counter,
             name: enteredRecipeName,
             ingredients: enteredIngredients.split(', '),
-            steps: enteredSteps,
-            url: enteredUrl
+            steps: String(enteredSteps),
+            url: String(enteredUrl)
         }
+
         counter++
-        recipes.push(newRecipe)
+        recipes.push(newRecipe);
         recipeForm.reset();
+
+        
         displayRecipe(newRecipe);
-        saveToLocalStorage()
-        window.scroll({
-            top: document.body.scrollHeight,
-            behavior: 'smooth' // Optional, adds smooth scrolling animation
-          });
-          
-           
+        addRecipeApi(newRecipe)
+
     });
 
+    // fetches and displays the recipes and other logic associated with it     
     fetchAndDisplay()
-
+    
+    // calling th function that waits for the auto fill button ic clicked
     autoFill()
     
     }
 
 
 main();
+
